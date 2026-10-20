@@ -118,56 +118,110 @@ if __name__ == "__main__":
 Start the Flask development server:
 
 ```bash
+# Flask Events API
+
+This project is a small Flask API for managing event titles. It demonstrates
+REST-style create, update, and delete operations with JSON request and response
+bodies.
+
+The API uses an in-memory list instead of a database. It starts with two sample
+events, so changes are lost whenever the Flask process restarts.
+
+## Getting Started
+
+Install the dependencies with Pipenv:
+
+```bash
+pipenv install
+pipenv shell
+```
+
+Start the development server:
+
+```bash
 python app.py
 ```
 
-Test your endpoints using Postman or curl:
+The API is available at `http://localhost:5000`.
 
-- `POST http://localhost:5000/events`
-  - Body: `{ "title": "Hackathon" }`
-- `PATCH http://localhost:5000/events/1`
-  - Body: `{ "title": "Hackathon 2025" }`
-- `DELETE http://localhost:5000/events/2`
+## Routes
 
----
+| Method | Route | Description | Success status |
+| --- | --- | --- | --- |
+| `POST` | `/events` | Create an event | `201 Created` |
+| `PATCH` | `/events/<id>` | Update an event title | `200 OK` |
+| `DELETE` | `/events/<id>` | Delete an event | `200 OK` |
 
-## Best Practices
+There is no `GET` route in the current implementation. The initial events are:
 
-- Use RESTful nouns in routes (e.g., `/events`)
-- Validate incoming JSON and handle missing keys gracefully
-- Use helper functions to reduce code repetition
-- Return:
-  - `201 Created` for successful POST
-  - `200 OK` or `204 No Content` for PATCH and DELETE
-  - `404 Not Found` if a resource doesn't exist
-- Include inline comments to explain logic
+```json
+[
+  {"id": 1, "title": "Tech Meetup"},
+  {"id": 2, "title": "Python Workshop"}
+]
+```
 
----
+## Example Requests and Responses
 
-## Considerations
+### Create an event
 
-**1. Input Validation**
-- Ensure the `title` field is provided.
-- Return a `400 Bad Request` if missing.
+```bash
+curl -X POST http://localhost:5000/events \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Hackathon"}'
+```
 
-**2. Event Not Found**
-- Return `404 Not Found` with a clear message when the event ID doesn't exist.
+Response: `201 Created`
 
-**3. Reusable Logic**
-- Consider writing a helper function to look up events by ID.
+```json
+{"id": 3, "title": "Hackathon"}
+```
 
-**4. Scalability**
-- While using a single file works here, separate concerns into modules as your API grows.
+### Update an event
 
----
+```bash
+curl -X PATCH http://localhost:5000/events/1 \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Advanced Python Workshop"}'
+```
 
-## Conclusion
+Response: `200 OK`
 
-After completing this lab, you will:
+```json
+{"id": 1, "title": "Advanced Python Workshop"}
+```
 
-✅ Know how to handle incoming JSON with Flask  
-✅ Build routes that implement full CRUD behavior  
-✅ Simulate persistent resource changes in memory  
-✅ Return proper HTTP status codes and structured responses  
+### Delete an event
 
-This is a critical step in your backend developer journey. Next up: persistent databases!
+```bash
+curl -X DELETE http://localhost:5000/events/2
+```
+
+Response: `200 OK`
+
+```json
+{"message":"Event 2 deleted"}
+```
+
+## Error Responses
+
+Create and update requests require a non-empty `title` value. Missing or invalid
+JSON returns `400 Bad Request`:
+
+```json
+{"error":"Title is required"}
+```
+
+Updating or deleting an ID that does not exist returns `404 Not Found`:
+
+```json
+{"error":"Event not found"}
+```
+
+## Tests
+
+Run the automated tests with:
+
+```bash
+pytest
+```
